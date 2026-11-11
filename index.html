@@ -67,7 +67,8 @@
 
         .tip {
             color: #b05a4a;
-            height: 20px;
+            height: 22px;
+            text-align: center;
         }
 
         .shake {
@@ -111,6 +112,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            margin-bottom:30px;
         }
 
         .img-wrap img {
@@ -118,6 +120,17 @@
             max-height: 75vh;
             border-radius: 16px;
             cursor: pointer;
+            box-shadow: 0 10px 24px rgba(180, 140, 100, 0.25);
+        }
+
+        /* 视频样式 */
+        .video-wrap {
+            max-width: 90%;
+            margin: 0 auto 30px;
+        }
+        video {
+            width: 100%;
+            border-radius: 16px;
             box-shadow: 0 10px 24px rgba(180, 140, 100, 0.25);
         }
 
@@ -159,7 +172,7 @@
 
     <!-- 密码页 -->
     <div id="lockPage">
-        <h2>请输入密码</h2>
+        <h2>密码是你的生日</h2>
         <input type="password" id="pwdInput" placeholder="输入密码">
         <button id="submitBtn">确认</button>
         <div class="tip" id="errTip"></div>
@@ -177,7 +190,14 @@
             <img id="showImg" src="" alt="">
         </div>
 
-        <button class="back-btn" id="backBtn">重新开始</button>
+        <!-- 视频模块，放在图片下面 -->
+        <div class="video-wrap">
+            <video id="msgVideo" controls>
+                <source src="assets/video.mp4" type="video/mp4">
+            </video>
+        </div>
+
+        <button class="back-btn" id="backBtn">返回开始</button>
     </div>
 
     <!-- 放大图片弹窗 -->
@@ -188,10 +208,16 @@
     <script>
         // ↓↓↓ 在这里修改全部内容 ↓↓↓
         const PASSWORD = "0316";
-
+        // 随机错误提示，输错会轮换
+        const errorTips = [
+            "别试了，不是做给你的",
+            "不懂我不会笑话你，偷笑",
+            "真没眼看你毛躁的样子，4位数字!",
+            "得把规距立住，不能坏，自己做网页才能不烧心"
+        ];
         const CONTENT = {
             title: "写给你又或者是我的",
-            letter: " 我很自私，从没考虑过你的感受，做事也没为你想过。五年来我没有一天不在后悔。你能打开这个网站我很惊喜，起码我的时间没有浪费，我没说出口的话终于可以以文字的形式出现。这张照片请你原谅我最后一次自私了，我心里的那道空洞一直在扩大，去年开始我想起我们曾发生的事情，你被骗钱还有晚自习我们一起回家，，我真想重来。你冷吗，过得好吗",
+            letter: "我很自私，从没考虑过你的感受，做事也没为你想过。五年来我没有一天不在后悔。你能打开这个网站我很惊喜，我没说出口的话终于可以以文字的形式出现。这张照片请你原谅我最后一次自私了，我心里的那道空洞一直在扩大，去年开始我想起我们曾发生的事情，你被骗钱惨兮兮的样子我到现在还记得哈哈哈哈哈，不要故意装不记得的样子，100块钱表面装不在乎，我追回来高兴的跟个二傻子，嘿嘿，还有晚自习我们一起回家，你在公交车上摇窗户骂我傻逼，哎，善语结善缘，恶言伤人心，别说，人一到二旬就容易性感，哈哈哈，最后几句话我想幽默点，但我前面是真情实感的哦",
             footnote: "—— 搞砸一切的人"
         };
 
@@ -220,6 +246,12 @@
         footnoteEl.innerText = CONTENT.footnote;
         showImg.src = PHOTOS[0].src;
 
+        // 随机拿一条错误提示
+        function getRandomErrorTip() {
+            const index = Math.floor(Math.random() * errorTips.length);
+            return errorTips[index];
+        }
+
         // 密码校验
         function checkPwd() {
             if (pwdInput.value === PASSWORD) {
@@ -228,7 +260,7 @@
                 errTip.textContent = "";
                 pwdInput.value = "";
             } else {
-                errTip.textContent = "密码错误";
+                errTip.textContent = getRandomErrorTip();
                 pwdInput.classList.add("shake");
                 setTimeout(() => pwdInput.classList.remove("shake"), 300);
                 pwdInput.value = "";
