@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私密分享</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, sans-serif;
+        }
+
+        body {
+            background: #f6efe6;
+            color: #4b3a32;
+        }
+
+        /* 密码锁屏页 */
+        #lockPage {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            background: linear-gradient(135deg, #fbeedb, #f3d9c8, #e9cbb4);
+        }
+
+        #lockPage h2 {
+            font-weight: 500;
+            color: #6b4a38;
+        }
+
+        #pwdInput {
+            padding: 12px 18px;
+            font-size: 17px;
+            width: 260px;
+            border-radius: 12px;
+            border: 1px solid #e2c5ad;
+            outline: none;
+            background: #fffaf3;
+            color: #4b3a32;
+        }
+
+        #pwdInput:focus {
+            border-color: #c99a74;
+            box-shadow: 0 0 0 3px rgba(201, 154, 116, 0.18);
+        }
+
+        #submitBtn {
+            padding: 11px 26px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 12px;
+            background: #d9a574;
+            color: white;
+            transition: background 0.2s ease;
+        }
+
+        #submitBtn:hover {
+            background: #c99464;
+        }
+
+        .tip {
+            color: #b05a4a;
+            height: 20px;
+        }
+
+        .shake {
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        /* 解锁内容页 */
+        #contentPage {
+            display: none;
+            min-height: 100vh;
+            padding: 40px 20px;
+            background: #fbf6ee;
+        }
+
+        .text-box {
+            max-width: 720px;
+            margin: 0 auto 35px;
+            text-align: center;
+            line-height: 1.9;
+            color: #5a4538;
+        }
+
+        .text-box h3 {
+            font-size: 22px;
+            margin-bottom: 16px;
+            color: #6b4a38;
+        }
+
+        .text-box p {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .img-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .img-wrap img {
+            max-width: 90%;
+            max-height: 75vh;
+            border-radius: 16px;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(180, 140, 100, 0.25);
+        }
+
+        .back-btn {
+            display: block;
+            margin: 35px auto 0;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            background: #e9cbb4;
+            color: #5a4538;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: #d9b89a;
+        }
+
+        /* 点击放大弹窗 */
+        #lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(60, 40, 25, 0.85);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #lightbox img {
+            max-width: 95vw;
+            max-height: 95vh;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 密码页 -->
+    <div id="lockPage">
+        <h2>请输入密码</h2>
+        <input type="password" id="pwdInput" placeholder="输入密码">
+        <button id="submitBtn">确认</button>
+        <div class="tip" id="errTip"></div>
+    </div>
+
+    <!-- 解锁后的内容 -->
+    <div id="contentPage">
+        <div class="text-box">
+            <h3 id="title"></h3>
+            <p id="letter"></p>
+            <p id="footnote"></p>
+        </div>
+
+        <div class="img-wrap">
+            <img id="showImg" src="" alt="">
+        </div>
+
+        <button class="back-btn" id="backBtn">重新开始</button>
+    </div>
+
+    <!-- 放大图片弹窗 -->
+    <div id="lightbox">
+        <img id="bigImg" alt="">
+    </div>
+
+    <script>
+        // ↓↓↓ 在这里修改全部内容 ↓↓↓
+        const PASSWORD = "0316";
+
+        const CONTENT = {
+            title: "写给你又或者是我的",
+            letter: " 我很自私，从没考虑过你的感受，做事也没为你想过。五年来我没有一天不在后悔。你能打开这个网站我很惊喜，起码我的时间没有浪费，我没说出口的话终于可以以文字的形式出现。这张照片请你原谅我最后一次自私了，我心里的那道空洞一直在扩大，去年开始我想起我们曾发生的事情，你被骗钱还有晚自习我们一起回家，，我真想重来。你冷吗，过得好吗",
+            footnote: "—— 搞砸一切的人"
+        };
+
+        const PHOTOS = [
+            { src: "assets/you.jfif", caption: "" }
+        ];
+        // ↑↑↑ 配置结束 ↑↑↑
+
+        const lockPage = document.getElementById("lockPage");
+        const contentPage = document.getElementById("contentPage");
+        const pwdInput = document.getElementById("pwdInput");
+        const submitBtn = document.getElementById("submitBtn");
+        const errTip = document.getElementById("errTip");
+        const backBtn = document.getElementById("backBtn");
+        const showImg = document.getElementById("showImg");
+        const bigImg = document.getElementById("bigImg");
+        const lightbox = document.getElementById("lightbox");
+
+        const titleEl = document.getElementById("title");
+        const letterEl = document.getElementById("letter");
+        const footnoteEl = document.getElementById("footnote");
+
+        // 填充文字和图片
+        titleEl.innerText = CONTENT.title;
+        letterEl.innerText = CONTENT.letter;
+        footnoteEl.innerText = CONTENT.footnote;
+        showImg.src = PHOTOS[0].src;
+
+        // 密码校验
+        function checkPwd() {
+            if (pwdInput.value === PASSWORD) {
+                lockPage.style.display = "none";
+                contentPage.style.display = "block";
+                errTip.textContent = "";
+                pwdInput.value = "";
+            } else {
+                errTip.textContent = "密码错误";
+                pwdInput.classList.add("shake");
+                setTimeout(() => pwdInput.classList.remove("shake"), 300);
+                pwdInput.value = "";
+            }
+        }
+
+        submitBtn.onclick = checkPwd;
+        pwdInput.onkeydown = e => {
+            if (e.key === "Enter") checkPwd();
+        };
+
+        // 返回锁屏
+        backBtn.onclick = () => {
+            lockPage.style.display = "flex";
+            contentPage.style.display = "none";
+            errTip.textContent = "";
+        };
+
+        // 点击图片放大
+        showImg.onclick = () => {
+            bigImg.src = showImg.src;
+            lightbox.style.display = "flex";
+        };
+
+        lightbox.onclick = () => {
+            lightbox.style.display = "none";
+        };
+    </script>
+
+</body>
+</html>
